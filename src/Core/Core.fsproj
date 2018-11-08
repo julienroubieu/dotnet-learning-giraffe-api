@@ -5,7 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Library.fs" />
+    <Compile Include="Auth/Entities.fs" />
+    <Compile Include="Auth/Services.fs" />
+    <Compile Include="Auth/UserRepository.fs" />
   </ItemGroup>
 
 </Project>
