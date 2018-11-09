@@ -8,12 +8,13 @@ module Repositories =
     abstract member Save: User -> User
     abstract member FindByEmail: Email -> option<User>
 
-  let mutable private users: Map<Email, User> = Map.empty
+  let private users: Dictionary<Email, User> = new Dictionary<Email, User>()
 
   let userRepository = {
     new IUserRepository with
       member this.Save (u: User) =
-        lock users (fun () -> users = users.Add(u.email, u)) |> ignore
+        users.Add(u.email, u) |> ignore
         u
-      member this.FindByEmail (email: Email) = users.TryFind email
+      member this.FindByEmail (email: Email) =
+        match users.ContainsKey email with | true -> Some(users.[email]) | _ -> None
   }

@@ -8,6 +8,18 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
+open Core.Auth.Entities
+open Core.Auth.Repositories
+
+do
+    let users: List<User> = [
+        { name = "John"; email = "hello@gmail.com"};
+        { name = "Julien"; email = "jroubieu@gmail.com"};
+        { name = "Jane"; email = "janeroubieu@gmail.com"};
+    ]
+    let saved = users |> List.map userRepository.Save
+    List.iter (fun u -> printfn "> Added user %s" u.name) saved
+    ()
 
 // ---------------------------------
 // Models
@@ -49,17 +61,21 @@ module Views =
 // Web app
 // ---------------------------------
 
-let indexHandler (name : string) =
-    let greetings = sprintf "Hello %s, from Giraffe!" name
-    let model     = { Text = greetings }
-    let view      = Views.index model
+let indexHandler (email : string) =
+    let user = userRepository.FindByEmail email
+    let greetings: string =
+        user
+        |> Option.map (fun u -> "Hello " + u.name)
+        |> Option.defaultValue "Hello world"
+    let model = { Text = greetings }
+    let view = Views.index model
     htmlView view
 
 let webApp =
     choose [
         GET >=>
             choose [
-                route "/" >=> indexHandler "world"
+                route "/" >=> indexHandler "hello@gmail.com"
                 routef "/hello/%s" indexHandler
             ]
         setStatusCode 404 >=> text "Not Found" ]
@@ -87,7 +103,7 @@ let configureApp (app : IApplicationBuilder) =
     (match env.IsDevelopment() with
     | true  -> app.UseDeveloperExceptionPage()
     | false -> app.UseGiraffeErrorHandler errorHandler)
-        .UseHttpsRedirection()
+        // .UseHttpsRedirection()
         .UseCors(configureCors)
         .UseStaticFiles()
         .UseGiraffe(webApp)
