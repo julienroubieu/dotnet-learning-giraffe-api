@@ -9,5 +9,6 @@ module Services =
 
   let laxAuthenticator = {
     new IAuthenticator with 
-      member this.Authenticate (credentials: Credentials) = true
+      member this.Authenticate (credentials: Credentials) =
+        credentials.password = "password"
   }
